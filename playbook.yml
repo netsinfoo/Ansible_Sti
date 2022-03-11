@@ -7,7 +7,8 @@
           
           -  name: Atualizando o apt
              apt: update_cache=yes cache_valid_time=3600
-          
+             
+             #PHP
           -  name: Instalar o Php
              apt:  name={{item}} state=present
              with_items:
@@ -27,7 +28,8 @@
           
           - name: Removendo o apache2
             apt: name=apache2 state=absent           
-
+            
+            #MARIADB 
           - name: Instalando o MariaDB
             apt: name={{item}} state=present
             with_items:
@@ -61,6 +63,32 @@
 
           - name: Criando o my.cnf
             template: src=templates/mysql/my.cnf dest=/root/.my.cnf
+
+            #NGINX
+          - name: Instalando o ngnix
+            apt: name=nginx state=present force=yes update_cache=yes
+
+          - name: Iniciando nginx
+            service: name=nginx state=started
+
+          - name: Removendo o arquivo de configurção padrão
+            file: path=/etc/nginx/sites-enabled/default state=absent
+
+          - name: Removendo o index padrão
+            file: path=/var/www/html/{{item}} state=absent
+            with_items:
+                    - index.html  
+                    - index.nginx-debian.html
+                      
+          - name: Criando configuração do Nginx
+            template: src=templates/nginx/default dest=/etc/nginx/conf.d/default.conf
+            notify: restart nginx
+
+             
+  
+  handlers:
+          - name: Reiniciando o Nginx
+            service: name=nginx state=restarted
 
             
 
