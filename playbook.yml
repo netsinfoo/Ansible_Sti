@@ -84,8 +84,51 @@
             template: src=templates/nginx/default dest=/etc/nginx/conf.d/default.conf
             notify: restart nginx
 
-             
-  
+           #WORDPRESS
+          - name: Pegando o checksum do wordpress
+            uri: url=https://wordpress.org/latest.zip.sha1 return_content=true
+            register: wp_checksum
+
+          - name: Baixando o Wordpress ultima versão
+            get_url: 
+                url: https://wordpress.org/latest.zip 
+                dest: /tmp/wordpress.zip 
+                checksum: "sha1:{{wp_checksum.content}}"
+          
+          #CONFIGURANDO A INSTALAÇÃO DO WORDPRESS
+          - name: Instalando ferramentas requeridas
+            apt: name={{item}} state=present
+            with_items:
+                    - unzip
+
+          - name: Descompactando o Wordpress
+            unarchive:
+                    src: /tmp/wordpress.zip 
+                    dest: /tmp
+                    copy: no
+                    creates: /tmp/wordpress/wp-settings.php
+          
+          - name: Criando pasta do projeto
+            file: dest=/usr/share/nginx/estudo  state=directory
+
+          - name: Copiando arquivos para o diretorio wordpress
+            command: cp -a /tmp/wordpress/. /usr/share/nginx/estudo creates=/usr/share/nginx/estudo/wp-settings.php
+          
+          - name: Criando a base de dados wordpress
+            mysql_db: name=wordpress state=present
+
+          - name: Criando o usuário wordpress
+            mysql_user: name=wordpress host=localhost login_password=Sti@2022 priv=wordpress.*:ALL
+            
+
+          - name: Criando a configuração wp-config
+            template: src=templates/wordpress/wp-config.php dest=usr/share/nginx/estudo/wp-config.php
+
+            
+
+
+
+
   handlers:
           - name: Reiniciando o Nginx
             service: name=nginx state=restarted
