@@ -84,8 +84,6 @@
             template: src=templates/nginx/default dest=/etc/nginx/sites-available/estudo
             notify: Reiniciando o Nginx
           
-          - name: Copiando arquivos para o diretorio wordpress
-            command: ln -s /etc/nginx/sites-available/estudo /etc/nginx/sites-enabled/
 
            #WORDPRESS
           - name: Pegando o checksum do wordpress
@@ -114,6 +112,12 @@
           - name: Criando pasta do projeto
             file: dest=/var/www/html/estudo  state=directory
 
+          - name: Criando site-avaliable estudo
+            file: dest=/etc/nginx/sites-enabled/estudo state=absent
+
+          - name: Criando links
+            command: ln -s /etc/nginx/sites-available/estudo /etc/nginx/sites-enabled/
+          
           - name: Copiando arquivos para o diretorio wordpress
             command: cp -a /tmp/wordpress/. /var/www/html/estudo creates=/var/www/html/estudo/wp-settings.php
           
