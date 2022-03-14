@@ -81,8 +81,11 @@
                     - index.nginx-debian.html
                       
           - name: Criando configuração do Nginx
-            template: src=templates/nginx/default dest=/etc/nginx/conf.d/default.conf
-            notify: restart nginx
+            template: src=templates/nginx/default dest=/etc/nginx/sites-available/estudo
+            notify: Reiniciando o Nginx
+          
+          - name: Copiando arquivos para o diretorio wordpress
+            command: ln -s /etc/nginx/sites-available/estudo /etc/nginx/sites-enabled/
 
            #WORDPRESS
           - name: Pegando o checksum do wordpress
@@ -109,10 +112,10 @@
                     creates: /tmp/wordpress/wp-settings.php
           
           - name: Criando pasta do projeto
-            file: dest=/usr/share/nginx/estudo  state=directory
+            file: dest=/var/www/html/estudo  state=directory
 
           - name: Copiando arquivos para o diretorio wordpress
-            command: cp -a /tmp/wordpress/. /usr/share/nginx/estudo creates=/usr/share/nginx/estudo/wp-settings.php
+            command: cp -a /tmp/wordpress/. /var/www/html/estudo creates=/var/www/html/estudo/wp-settings.php
           
           - name: Criando a base de dados wordpress
             mysql_db: name=wordpress state=present
@@ -122,11 +125,7 @@
             
 
           - name: Criando a configuração wp-config
-            template: src=templates/wordpress/wp-config.php dest=usr/share/nginx/estudo/wp-config.php
-
-            
-
-
+            template: src=templates/wordpress/wp-config.php dest=/var/www/html/estudo/wp-config.php
 
 
   handlers:
