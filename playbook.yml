@@ -125,7 +125,12 @@
             mysql_db: name=wordpress state=present
 
           - name: Criando o usuário wordpress
-            mysql_user: name=wordpress host=localhost login_password=Sti@2022 priv=wordpress.*:ALL
+            mysql_user: name=wordpress host={{item}} password=Sti@2022 priv=wordpress.*:ALL
+            with_items:
+                    - "{{ ansible_hostname }}"
+                    - 127.0.0.1
+                    - ::1
+                    - localhost
             
 
           - name: Criando a configuração wp-config
